@@ -1,8 +1,6 @@
 package golog
 
 import (
-	"fmt"
-
 	wr "github.com/mreza0100/golog/writer"
 )
 
@@ -15,24 +13,17 @@ type InitOprions struct {
 }
 
 func New(opts InitOprions) *Core {
-	opts.Name = "name: " + opts.Name
-	add := []interface{}{opts.Name}
+	add := []interface{}{opts.Name + ": "}
 
-	writer, err := wr.NewWriter(wr.NewOpts{
-		LogPath:    opts.LogPath,
-		PanicOnErr: opts.PanicOnErr,
+	writer := wr.New(wr.NewOpts{
+		LogPath: opts.LogPath,
 	})
-	if err != nil {
-		panic(err)
-	}
-
-	err = writer.Write("mamad")
-	fmt.Println(err)
 
 	return &Core{
-		logPath: opts.LogPath,
-		name:    opts.Name,
-		add:     add,
-		wr:      writer,
+		LogPath:    opts.LogPath,
+		Add:        add,
+		Hooks:      []func(logger *Core) interface{}{},
+		WR:         writer,
+		panicOnErr: opts.PanicOnErr,
 	}
 }

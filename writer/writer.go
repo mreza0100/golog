@@ -8,21 +8,19 @@ import (
 )
 
 type Writer struct {
-	logPath    string
-	panicOnErr bool
+	logPath string
 }
 
 type NewOpts struct {
-	LogPath    string
-	PanicOnErr bool
+	LogPath string
 }
 
-func NewWriter(opt NewOpts) (Writer, error) {
+func New(opt NewOpts) Writer {
 	createDir(opt.LogPath)
 
 	return Writer{
 		logPath: opt.LogPath,
-	}, nil
+	}
 }
 
 func (w *Writer) writeHandler(data []byte) error {
@@ -59,7 +57,7 @@ func (w *Writer) Write(msgs ...interface{}) (err error) {
 		}
 	}
 	err = w.writeHandler(finallMsg)
-	if err != nil && w.panicOnErr {
+	if err != nil {
 		return err
 	}
 

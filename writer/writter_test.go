@@ -7,9 +7,8 @@ import (
 )
 
 func TestWriterType(t *testing.T) {
-	w, _ := wr.NewWriter(wr.NewOpts{
-		LogPath:    "./logs/out.log",
-		PanicOnErr: false,
+	w := wr.New(wr.NewOpts{
+		LogPath: "./logs/out.log",
 	})
 	var err error
 

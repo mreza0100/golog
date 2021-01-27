@@ -2,16 +2,17 @@ package golog
 
 import (
 	"fmt"
+	"log"
 
 	wr "github.com/mreza0100/golog/writer"
 )
 
 type Core struct {
-	logPath string
-	wr      wr.Writer
-	name    string
-	add     []interface{}
-	hooks   []func(logger *Core) interface{}
+	LogPath    string
+	WR         wr.Writer
+	panicOnErr bool
+	Add        []interface{}
+	Hooks      []func(logger *Core) interface{}
 }
 
 func (logger *Core) Copy() *Core {
@@ -23,21 +24,21 @@ func (logger *Core) Copy() *Core {
 func (logger *Core) With(add ...interface{}) *Core {
 	newLogger := logger.Copy()
 
-	newLogger.add = combine(add, logger.add)
+	newLogger.Add = combine(add, logger.Add)
 
 	return newLogger
 }
 
 func (logger *Core) AddHook(fn ...func(logger *Core) interface{}) *Core {
-	logger.hooks = append(logger.hooks, fn...)
+	logger.Hooks = append(logger.Hooks, fn...)
 
 	return logger
 }
 
-func (logger *Core) getHooksVals() []interface{} {
-	result := make([]interface{}, len(logger.hooks))
+func (logger *Core) callHooksVals() []interface{} {
+	result := make([]interface{}, len(logger.Hooks))
 
-	for idx, hook := range logger.hooks {
+	for idx, hook := range logger.Hooks {
 		result[idx] = hook(logger)
 	}
 
@@ -45,11 +46,17 @@ func (logger *Core) getHooksVals() []interface{} {
 }
 
 func (logger *Core) Log(msgs ...interface{}) *Core {
-	msgs = combine(logger.add, logger.getHooksVals(), msgs)
+	msgs = combine(logger.Add, logger.callHooksVals(), msgs)
 
-	fmt.Println(msgs...)
+	fmt.Print(msgs...)
 
-	logger.wr.Write(msgs...)
+	wrErr := logger.WR.Write(msgs...)
+	if wrErr != nil {
+		if logger.panicOnErr {
+			panic(wrErr)
+		}
+		log.Fatal(wrErr)
+	}
 
 	return logger
 }
