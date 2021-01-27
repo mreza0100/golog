@@ -13,7 +13,7 @@ type InitOprions struct {
 }
 
 func New(opts InitOprions) *Core {
-	add := []interface{}{opts.Name + ": "}
+	add := []interface{}{opts.Name + "=> "}
 
 	writer := wr.New(wr.NewOpts{
 		LogPath: opts.LogPath,
