@@ -24,7 +24,7 @@ func (logger *Core) Copy() *Core {
 func (logger *Core) With(add ...interface{}) *Core {
 	newLogger := logger.Copy()
 
-	newLogger.Add = combine(add, logger.Add)
+	newLogger.Add = combine(logger.Add, add)
 
 	return newLogger
 }
