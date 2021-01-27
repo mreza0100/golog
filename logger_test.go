@@ -1,11 +1,11 @@
-package logger_test
+package golog_test
 
 import (
 	"fmt"
 	"testing"
 	"time"
 
-	"github.com/mreza0100/logger"
+	logger "github.com/mreza0100/golog"
 )
 
 func TestCopy(t *testing.T) {

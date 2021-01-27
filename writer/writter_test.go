@@ -3,7 +3,7 @@ package writer_test
 import (
 	"testing"
 
-	wr "github.com/mreza0100/logger/writer"
+	wr "github.com/mreza0100/golog/writer"
 )
 
 func TestWriterType(t *testing.T) {

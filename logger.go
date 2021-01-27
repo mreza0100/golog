@@ -1,9 +1,9 @@
-package logger
+package golog
 
 import (
 	"fmt"
 
-	wr "github.com/mreza0100/logger/writer"
+	wr "github.com/mreza0100/golog/writer"
 )
 
 type Core struct {

@@ -1,4 +1,4 @@
-package logger
+package golog
 
 func combine(in ...[]interface{}) (result []interface{}) {
 	result = make([]interface{}, 0)
