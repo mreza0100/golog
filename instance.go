@@ -1,6 +1,8 @@
 package golog
 
 import (
+	"fmt"
+
 	wr "github.com/mreza0100/golog/writer"
 )
 
@@ -18,6 +20,8 @@ func New(opts InitOprions) *Core {
 	writer := wr.New(wr.NewOpts{
 		LogPath: opts.LogPath,
 	})
+
+	fmt.Println("mamade daron")
 
 	return &Core{
 		LogPath:    opts.LogPath,
