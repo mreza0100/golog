@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/mreza0100/golog/helpers"
 )
 
 type Writer struct {
@@ -16,7 +18,7 @@ type NewOpts struct {
 }
 
 func New(opt NewOpts) Writer {
-	createDir(opt.LogPath)
+	helpers.CreateDir(opt.LogPath)
 
 	return Writer{
 		logPath: opt.LogPath,
@@ -49,7 +51,7 @@ func (w *Writer) Write(msgs ...interface{}) (err error) {
 		case uint64:
 			finallMsg = append(finallMsg, []byte(strconv.Itoa(int(s)))...)
 		default:
-			finallMsg, err = json.Marshal(parseVal(s))
+			finallMsg, err = json.Marshal(helpers.ParseVal(s))
 			if err != nil {
 				fmt.Println("From writer: Cant Marshal value")
 				return err

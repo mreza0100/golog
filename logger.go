@@ -2,61 +2,111 @@ package golog
 
 import (
 	"fmt"
-	"log"
+	"sync"
 
+	"github.com/mreza0100/golog/helpers"
 	wr "github.com/mreza0100/golog/writer"
 )
 
 type Core struct {
-	LogPath    string
-	WR         wr.Writer
-	panicOnErr bool
-	Add        []interface{}
-	Hooks      []func(logger *Core) interface{}
+	mu          *sync.Mutex
+	color       string
+	isDebugMode bool
+	LogPath     string
+	Add         []interface{}
+	WR          wr.Writer
+	Hooks       []func(lgr *Core) interface{}
+	Debug       *Core
 }
 
-func (logger *Core) Copy() *Core {
-	newLogger := *logger
-
-	return &newLogger
+func (lgr Core) Copy() *Core {
+	return &lgr
 }
 
-func (logger *Core) With(add ...interface{}) *Core {
-	newLogger := logger.Copy()
+func (lgr *Core) With(add ...interface{}) *Core {
+	newLogger := lgr.Copy()
 
-	newLogger.Add = combine(logger.Add, add)
+	newLogger.Add = helpers.Combine(lgr.Add, add)
+	newLogger.mu = &sync.Mutex{}
 
 	return newLogger
 }
 
-func (logger *Core) AddHook(fn ...func(logger *Core) interface{}) *Core {
-	logger.Hooks = append(logger.Hooks, fn...)
+func (lgr *Core) AddHook(fn ...func(lgr *Core) interface{}) *Core {
+	lgr.mu.Lock()
+	lgr.Hooks = append(lgr.Hooks, fn...)
+	lgr.mu.Unlock()
 
-	return logger
+	return lgr
 }
 
-func (logger *Core) callHooksVals() []interface{} {
-	result := make([]interface{}, len(logger.Hooks))
+func (lgr *Core) Log(msgs ...interface{}) *Core {
+	lgr.mu.Lock()
+	msgs = lgr.getFullMsgs(msgs...)
+	lgr.mu.Unlock()
 
-	for idx, hook := range logger.Hooks {
-		result[idx] = hook(logger)
+	fmt.Print(helpers.Unshift(lgr.color, msgs)...)
+
+	wrErr := lgr.WR.Write(msgs...)
+	if wrErr != nil {
+		fmt.Println("internal error in `golog/writer`")
+		fmt.Println("error: ", wrErr)
+	}
+
+	return lgr
+}
+
+func (lgr *Core) getFullMsgs(msgs ...interface{}) []interface{} {
+	msgs = helpers.Combine(lgr.Add, lgr.getHooksVals(), msgs)
+	msgs = append(msgs, "\n")
+
+	return msgs
+}
+
+func (lgr *Core) getHooksVals() []interface{} {
+	result := make([]interface{}, len(lgr.Hooks))
+
+	for idx, hook := range lgr.Hooks {
+		result[idx] = hook(lgr)
 	}
 
 	return result
 }
 
-func (logger *Core) Log(msgs ...interface{}) *Core {
-	msgs = combine(logger.Add, logger.callHooksVals(), msgs)
+func (lgr *Core) getColor() string {
+	lgr.mu.Lock()
+	defer lgr.mu.Unlock()
+	return lgr.color
+}
 
-	fmt.Print(msgs...)
+func (lgr *Core) setColor(color string) {
+	lgr.mu.Lock()
+	defer lgr.mu.Unlock()
+	lgr.color = color
+}
 
-	wrErr := logger.WR.Write(msgs...)
-	if wrErr != nil {
-		if logger.panicOnErr {
-			panic(wrErr)
-		}
-		log.Fatal(wrErr)
-	}
+func (lgr *Core) colorLog(color string, msgs ...interface{}) *Core {
+	lgr.setColor(color)
+	defer lgr.setColor(helpers.ColorWhite)
 
-	return logger
+	return lgr.Log(msgs...)
+}
+
+func (lgr *Core) RedLog(msgs ...interface{}) *Core {
+	return lgr.colorLog(helpers.ColorRed, msgs...)
+}
+func (lgr *Core) YellowLog(msgs ...interface{}) *Core {
+	return lgr.colorLog(helpers.ColorYellow, msgs...)
+}
+func (lgr *Core) GreenLog(msgs ...interface{}) *Core {
+	return lgr.colorLog(helpers.ColorGreen, msgs...)
+}
+func (lgr *Core) BlueLog(msgs ...interface{}) *Core {
+	return lgr.colorLog(helpers.ColorBlue, msgs...)
+}
+func (lgr *Core) PurpleLog(msgs ...interface{}) *Core {
+	return lgr.colorLog(helpers.ColorPurple, msgs...)
+}
+func (lgr *Core) CyanLog(msgs ...interface{}) *Core {
+	return lgr.colorLog(helpers.ColorCyan, msgs...)
 }
