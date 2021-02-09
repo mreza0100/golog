@@ -4,43 +4,41 @@ import (
 	"fmt"
 	"testing"
 
-	logger "github.com/mreza0100/golog"
+	"github.com/mreza0100/golog"
 )
 
-var log = logger.New(logger.InitOprions{
-	WithTime: true,
-	LogPath:  "./log/out.log",
-	Name:     "test",
+var lgr = golog.New(golog.InitOprions{
+	WithTime:     true,
+	LogPath:      "./log/out.log",
+	Name:         "test",
+	DebugMode:    false,
+	ClearLogFile: true,
 })
 
 func TestCopy(t *testing.T) {
-	logCopy := log.Copy()
-	if logCopy == log {
+	logCopy := lgr.Copy()
+	if logCopy == lgr {
 		fmt.Println("Instance was the same")
 		panic("'logCopy == log' was 'true'")
 	}
-
-	logCopy.LogPath = "./log2/all.log"
-	if logCopy.LogPath == log.LogPath {
-		fmt.Println("Instance was the same")
-		panic("'logCopy.LogPath == log.LogPath' was 'true'")
-	}
-
 }
 
 func TestLogger(t *testing.T) {
-
-	log = log.With("hamishe", "mamad")
-	log.Log("second mamad")
+	newLgr := lgr.With("hamishe", "mamad")
+	newLgr.Log("second mamad")
 
 }
 
 func TestStructLogger(t *testing.T) {
-	log.Log(struct {
+	lgr.Log(struct {
 		a int
 		b string
 	}{
 		a: 2143124,
 		b: "oawodfihaiorhwf",
 	})
+}
+
+func TestDebugMode(t *testing.T) {
+	lgr.Debug.GreenLog("mamad is here")
 }

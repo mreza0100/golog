@@ -1,4 +1,4 @@
-package helpers
+package colors
 
 const (
 	ColorRed    = string("\033[31m")
