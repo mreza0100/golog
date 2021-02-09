@@ -11,9 +11,8 @@ func Combine(in ...[]interface{}) (result []interface{}) {
 	result = make([]interface{}, 0, len(in)*2)
 
 	for _, i := range in {
-		for _, j := range i {
-			result = append(result, j, " | ")
-		}
+		result = append(result, i...)
+		result = append(result, " ")
 	}
 
 	return result

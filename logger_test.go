@@ -7,21 +7,20 @@ import (
 	logger "github.com/mreza0100/golog"
 )
 
+var log = logger.New(logger.InitOprions{
+	WithTime: true,
+	LogPath:  "./log/out.log",
+	Name:     "test",
+})
+
 func TestCopy(t *testing.T) {
-	log := logger.New(logger.InitOprions{
-		WithTime: false,
-		LogPath:  "./log/all.log",
-		Name:     "test",
-	})
-	defer func() {}()
 	logCopy := log.Copy()
 	if logCopy == log {
 		fmt.Println("Instance was the same")
 		panic("'logCopy == log' was 'true'")
 	}
-	logCopy.With("some stupid text: ")
 
-	log.LogPath = "./log2/all.log"
+	logCopy.LogPath = "./log2/all.log"
 	if logCopy.LogPath == log.LogPath {
 		fmt.Println("Instance was the same")
 		panic("'logCopy.LogPath == log.LogPath' was 'true'")
@@ -30,13 +29,18 @@ func TestCopy(t *testing.T) {
 }
 
 func TestLogger(t *testing.T) {
-	log := logger.New(logger.InitOprions{
-		WithTime: true,
-		LogPath:  "./logs/out.log",
-		Name:     "test",
-	})
-	extendedLogger := log.With("hamishe mamad")
-	extendedLogger.Log("second mamad")
 
-	extendedLogger.Log("third mamad")
+	log = log.With("hamishe", "mamad")
+	log.Log("second mamad")
+
+}
+
+func TestStructLogger(t *testing.T) {
+	log.Log(struct {
+		a int
+		b string
+	}{
+		a: 2143124,
+		b: "oawodfihaiorhwf",
+	})
 }

@@ -45,7 +45,10 @@ func (lgr *Core) Log(msgs ...interface{}) *Core {
 	msgs = lgr.getFullMsgs(msgs...)
 	lgr.mu.Unlock()
 
-	fmt.Print(helpers.Unshift(lgr.color, msgs)...)
+	fmt.Print(lgr.color)
+	for _, i := range msgs {
+		fmt.Print(i)
+	}
 
 	wrErr := lgr.WR.Write(msgs...)
 	if wrErr != nil {

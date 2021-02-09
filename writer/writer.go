@@ -1,10 +1,8 @@
 package writer
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/mreza0100/golog/helpers"
 )
@@ -29,7 +27,6 @@ func (w *Writer) writeHandler(data []byte) error {
 	f, _ := os.OpenFile(w.logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 	defer f.Close()
 
-	data = append(data, []byte("\n")...)
 	_, err := f.Write(data)
 	if err != nil {
 		return err
@@ -38,30 +35,16 @@ func (w *Writer) writeHandler(data []byte) error {
 	return nil
 }
 
-func (w *Writer) Write(msgs ...interface{}) (err error) {
-	finallMsg := []byte("")
+func (w *Writer) Write(msgs ...interface{}) error {
+	finallStr := ""
+
 	for _, msg := range msgs {
-		switch s := msg.(type) {
-		case string:
-			finallMsg = append(finallMsg, []byte(s)...)
-		case int:
-			finallMsg = append(finallMsg, []byte(strconv.Itoa(s))...)
-		case int64:
-			finallMsg = append(finallMsg, []byte(strconv.Itoa(int(s)))...)
-		case uint64:
-			finallMsg = append(finallMsg, []byte(strconv.Itoa(int(s)))...)
-		default:
-			finallMsg, err = json.Marshal(helpers.ParseVal(s))
-			if err != nil {
-				fmt.Println("From writer: Cant Marshal value")
-				return err
-			}
-		}
-	}
-	err = w.writeHandler(finallMsg)
-	if err != nil {
-		return err
+		finallStr += fmt.Sprintf("%v", msg)
 	}
 
-	return nil
+	return w.writeHandler([]byte(finallStr))
+}
+
+func (w *Writer) RemoveFile() error {
+	return os.Remove(w.logPath)
 }
