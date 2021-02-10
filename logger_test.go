@@ -6,7 +6,7 @@ import (
 	"github.com/mreza0100/golog"
 )
 
-var lgr = golog.New(golog.InitOprions{
+var lgr = golog.New(golog.InitOpns{
 	WithTime:     true,
 	LogPath:      "./log/out.log",
 	Name:         "test",

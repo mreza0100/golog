@@ -6,7 +6,7 @@ import (
 	wr "github.com/mreza0100/golog/writer"
 )
 
-type InitOprions struct {
+type InitOpns struct {
 	LogPath      string
 	Name         string
 	WithTime     bool
@@ -17,7 +17,7 @@ type InitOprions struct {
 
 type hookT []func(*Core) interface{}
 
-func New(opts InitOprions) *Core {
+func New(opts InitOpns) *Core {
 	var (
 		addLog      = make([]interface{}, 0, 1)
 		hooks       = make(hookT, 0, 1)
