@@ -50,7 +50,16 @@ func TestLogger(t *testing.T) {
 
 }
 
+func TestColor() {
+	lgr.GreenLog("mamad is here and must be green")
+	lgr.Log("this is from the other mamad and should be in default color")
+}
+
 func TestDebugMode(t *testing.T) {
-	lgr.Debug.GreenLog("mamad is here and must be green")
-	lgr.Debug.Log("this is from the other mamad and should be in default color")
+	lgr.Debug.IsDebugMode = true
+
+	lgr.Debug.Log("you should be able to see this")
+
+	lgr.Debug.IsDebugMode = false
+	lgr.Debug.Log("___you should not be able to see this___")
 }
