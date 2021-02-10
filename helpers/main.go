@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"fmt"
 	"os/exec"
 	"reflect"
 	"strings"
@@ -62,4 +63,14 @@ func Unshift(new interface{}, vals []interface{}) []interface{} {
 	result = append(result, vals...)
 
 	return result
+}
+
+func ToByte(vals ...interface{}) []byte {
+	str := ""
+
+	for _, v := range vals {
+		str += fmt.Sprintf("%v", v)
+	}
+
+	return []byte(str)
 }

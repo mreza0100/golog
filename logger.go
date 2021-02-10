@@ -2,6 +2,8 @@ package golog
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"sync"
 
 	"github.com/mreza0100/golog/colors"
@@ -39,6 +41,13 @@ func (lgr Core) Copy() *Core {
 	return &lgr
 }
 
+func (lgr *Core) Fatal(msgs ...interface{}) {
+	lgr.YellowLog("Fatal error ", strings.Repeat("-", 25))
+	lgr.RedLog(msgs...)
+	lgr.YellowLog("Fatal error ", strings.Repeat("-", 25))
+	os.Exit(1)
+}
+
 func (lgr *Core) With(add ...interface{}) *Core {
 	newLogger := lgr.Copy()
 
@@ -56,17 +65,18 @@ func (lgr *Core) AddHook(fn ...func(lgr *Core) interface{}) *Core {
 }
 
 func (lgr *Core) Log(msgs ...interface{}) *Core {
-	lgr.data.mu.Lock()
-	if !lgr.IsDebugMode {
-		return lgr
+	{
+		lgr.data.mu.Lock()
+		if !lgr.IsDebugMode {
+			return lgr
+		}
+		msgs = lgr.getFullMsgs(msgs...)
+		lgr.data.mu.Unlock()
 	}
-	msgs = lgr.getFullMsgs(msgs...)
-	lgr.data.mu.Unlock()
 
+	// set color
 	fmt.Print(lgr.data.color)
-	for _, i := range msgs {
-		fmt.Print(i)
-	}
+	fmt.Print(msgs...)
 
 	wrErr := lgr.WR.Write(msgs...)
 	if wrErr != nil {
@@ -79,7 +89,6 @@ func (lgr *Core) Log(msgs ...interface{}) *Core {
 
 func (lgr *Core) getFullMsgs(msgs ...interface{}) []interface{} {
 	msgs = helpers.Combine(lgr.data.addLog, lgr.getHooksVals(), msgs)
-
 	msgs = append(msgs, "\n")
 
 	return msgs

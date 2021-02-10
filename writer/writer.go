@@ -1,7 +1,6 @@
 package writer
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/mreza0100/golog/helpers"
@@ -36,13 +35,7 @@ func (w *Writer) writeHandler(data []byte) error {
 }
 
 func (w *Writer) Write(msgs ...interface{}) error {
-	finallStr := ""
-
-	for _, msg := range msgs {
-		finallStr += fmt.Sprintf("%v", msg)
-	}
-
-	return w.writeHandler([]byte(finallStr))
+	return w.writeHandler(helpers.ToByte(msgs...))
 }
 
 func (w *Writer) RemoveFile() error {
