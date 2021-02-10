@@ -12,10 +12,9 @@ import (
 )
 
 type dataT struct {
-	logPath string
-	addLog  []interface{}
-	hooks   []func(lgr *Core) interface{}
-	color   string
+	LogPath string
+	AddLog  []interface{}
+	Hooks   []func(lgr *Core) interface{}
 	mu      *sync.Mutex
 }
 
@@ -24,21 +23,16 @@ type Core struct {
 	WR          wr.Writer
 	Debug       *Core
 
-	data *dataT
+	Data *dataT
 }
 
-func (lgr Core) Copy() *Core {
-	newData := &dataT{
-		logPath: lgr.data.logPath,
-		addLog:  lgr.data.addLog,
-		hooks:   lgr.data.hooks,
-		color:   colors.ColorWhite,
-		mu:      &sync.Mutex{},
-	}
+func (lgr *Core) Copy() *Core {
+	newLogger := *lgr
+	newData := *lgr.Data
 
-	lgr.data = newData
+	newLogger.Data = &newData
 
-	return &lgr
+	return &newLogger
 }
 
 func (lgr *Core) Fatal(msgs ...interface{}) {
@@ -51,31 +45,29 @@ func (lgr *Core) Fatal(msgs ...interface{}) {
 func (lgr *Core) With(add ...interface{}) *Core {
 	newLogger := lgr.Copy()
 
-	newLogger.data.addLog = helpers.Combine(lgr.data.addLog, add)
+	newLogger.Data.AddLog = helpers.Combine(lgr.Data.AddLog, add)
 
 	return newLogger
 }
 
 func (lgr *Core) AddHook(fn ...func(lgr *Core) interface{}) *Core {
-	lgr.data.mu.Lock()
-	lgr.data.hooks = append(lgr.data.hooks, fn...)
-	lgr.data.mu.Unlock()
+	lgr.Data.mu.Lock()
+	lgr.Data.Hooks = append(lgr.Data.Hooks, fn...)
+	lgr.Data.mu.Unlock()
 
 	return lgr
 }
 
 func (lgr *Core) Log(msgs ...interface{}) *Core {
 	{
-		lgr.data.mu.Lock()
+		lgr.Data.mu.Lock()
 		if !lgr.IsDebugMode {
 			return lgr
 		}
 		msgs = lgr.getFullMsgs(msgs...)
-		lgr.data.mu.Unlock()
+		lgr.Data.mu.Unlock()
 	}
 
-	// set color
-	fmt.Print(lgr.data.color)
 	fmt.Print(msgs...)
 
 	wrErr := lgr.WR.Write(msgs...)
@@ -88,16 +80,16 @@ func (lgr *Core) Log(msgs ...interface{}) *Core {
 }
 
 func (lgr *Core) getFullMsgs(msgs ...interface{}) []interface{} {
-	msgs = helpers.Combine(lgr.data.addLog, lgr.getHooksVals(), msgs)
+	msgs = helpers.Combine(lgr.Data.AddLog, lgr.getHooksVals(), msgs)
 	msgs = append(msgs, "\n")
 
 	return msgs
 }
 
 func (lgr *Core) getHooksVals() []interface{} {
-	result := make([]interface{}, len(lgr.data.hooks))
+	result := make([]interface{}, len(lgr.Data.Hooks))
 
-	for idx, hook := range lgr.data.hooks {
+	for idx, hook := range lgr.Data.Hooks {
 		result[idx] = hook(lgr)
 	}
 
@@ -105,19 +97,20 @@ func (lgr *Core) getHooksVals() []interface{} {
 }
 
 func (lgr *Core) setColor(color string) {
-	lgr.data.mu.Lock()
-	lgr.data.color = color
-	lgr.data.mu.Unlock()
+	fmt.Print(color)
+}
+
+func (lgr *Core) unSet() {
+	fmt.Printf("%s[%dm", "\x1b", 0)
 }
 
 func (lgr *Core) colorLog(color string, msgs ...interface{}) *Core {
 	if !lgr.IsDebugMode {
-		fmt.Println(22)
 		return lgr
 	}
 
 	lgr.setColor(color)
-	defer lgr.setColor(colors.ColorWhite)
+	defer lgr.unSet()
 
 	return lgr.Log(msgs...)
 }

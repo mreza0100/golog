@@ -1,7 +1,6 @@
 package golog_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/mreza0100/golog"
@@ -11,34 +10,47 @@ var lgr = golog.New(golog.InitOprions{
 	WithTime:     true,
 	LogPath:      "./log/out.log",
 	Name:         "test",
-	DebugMode:    false,
+	DebugMode:    true,
 	ClearLogFile: true,
 })
 
 func TestCopy(t *testing.T) {
-	logCopy := lgr.Copy()
-	if logCopy == lgr {
-		fmt.Println("Instance was the same")
-		panic("'logCopy == log' was 'true'")
-	}
+	lgrCopy := lgr.Copy()
+	lgrCopy.IsDebugMode = false
+	lgrCopy.Data.LogPath = "./fakePath/mamad.log"
+
+	t.Run("1", func(t *testing.T) {
+		if lgrCopy == lgr {
+			t.Error("Instance was the same\n")
+			t.Error("'lgrCopy == log' was 'true'")
+			t.FailNow()
+		}
+	})
+
+	t.Run("2", func(t *testing.T) {
+		if lgr.IsDebugMode == false {
+			t.Error("Instance was the same\n")
+			t.Error("'lgrCopy.IsDebugMode == log.IsDebugMode' was 'true'")
+			t.FailNow()
+		}
+	})
+
+	t.Run("Deeper", func(t *testing.T) {
+		if lgrCopy.Data.LogPath == lgr.Data.LogPath || lgrCopy.Data == lgr.Data {
+			t.Error("Instance was the same\n")
+			t.Error("'lgrCopy.IsDebugMode == log.IsDebugMode' was 'true'")
+			t.FailNow()
+		}
+	})
 }
 
 func TestLogger(t *testing.T) {
-	newLgr := lgr.With("hamishe", "mamad")
+	newLgr := lgr.With("hamishe ", " mamad")
 	newLgr.Log("second mamad")
 
 }
 
-func TestStructLogger(t *testing.T) {
-	lgr.Log(struct {
-		a int
-		b string
-	}{
-		a: 2143124,
-		b: "oawodfihaiorhwf",
-	})
-}
-
 func TestDebugMode(t *testing.T) {
-	lgr.Debug.GreenLog("mamad is here")
+	lgr.Debug.GreenLog("mamad is here and must be green")
+	lgr.Debug.Log("this is from the other mamad and should be in default color")
 }

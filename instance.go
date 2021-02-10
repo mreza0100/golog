@@ -3,7 +3,6 @@ package golog
 import (
 	"sync"
 
-	"github.com/mreza0100/golog/colors"
 	wr "github.com/mreza0100/golog/writer"
 )
 
@@ -43,23 +42,22 @@ func New(opts InitOprions) *Core {
 	}
 
 	data := &dataT{
-		logPath: opts.LogPath,
-		addLog:  addLog,
-		hooks:   hooks,
-		color:   colors.ColorWhite,
+		LogPath: opts.LogPath,
+		AddLog:  addLog,
+		Hooks:   hooks,
 		mu:      &sync.Mutex{},
 	}
 
 	lgr := &Core{
 		IsDebugMode: true, // always working
-		data:        data,
+		Data:        data,
 
 		WR: writer,
 	}
 	lgr.Debug = &Core{
 		IsDebugMode: isDebugMode,
 		WR:          writer,
-		data:        data,
+		Data:        data,
 	}
 
 	return lgr
