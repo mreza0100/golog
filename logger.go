@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/mreza0100/golog/colors"
-	"github.com/mreza0100/golog/helpers"
+	stuff "github.com/mreza0100/golog/fun_stuff"
+	hs "github.com/mreza0100/golog/helpers"
 	wr "github.com/mreza0100/golog/writer"
 )
 
@@ -36,16 +36,16 @@ func (lgr *Core) Copy() *Core {
 }
 
 func (lgr *Core) Fatal(msgs ...interface{}) {
-	lgr.YellowLog("Fatal error ", strings.Repeat("-", 25))
+	lgr.InfoLog("Fatal error ", strings.Repeat("-", 25))
 	lgr.RedLog(msgs...)
-	lgr.YellowLog("Fatal error ", strings.Repeat("-", 25))
+	lgr.InfoLog("Fatal error ", strings.Repeat("-", 25))
 	os.Exit(1)
 }
 
 func (lgr *Core) With(add ...interface{}) *Core {
 	newLogger := lgr.Copy()
 
-	newLogger.Data.AddLog = helpers.Combine(lgr.Data.AddLog, add)
+	newLogger.Data.AddLog = hs.Combine(lgr.Data.AddLog, add)
 
 	return newLogger
 }
@@ -80,7 +80,7 @@ func (lgr *Core) Log(msgs ...interface{}) *Core {
 }
 
 func (lgr *Core) getFullMsgs(msgs ...interface{}) []interface{} {
-	msgs = helpers.Combine(lgr.Data.AddLog, lgr.getHooksVals(), msgs)
+	msgs = hs.Combine(lgr.Data.AddLog, lgr.getHooksVals(), msgs)
 	msgs = append(msgs, "\n")
 
 	return msgs
@@ -115,21 +115,66 @@ func (lgr *Core) colorLog(color string, msgs ...interface{}) *Core {
 	return lgr.Log(msgs...)
 }
 
-func (lgr *Core) RedLog(msgs ...interface{}) *Core {
-	return lgr.colorLog(colors.ColorRed, msgs...)
+func (lgr *Core) DebugPKG(where string, active bool) (func(msgs ...interface{}) func(error) error, func(...interface{}) interface{}) {
+	lgr = lgr.Debug.With("\nDebugPKG " + where + ":")
+	if !active {
+		return func(msgs ...interface{}) func(error) error {
+				return func(err error) error {
+					if err != nil {
+						lgr.RedLog("Error in deactive mode")
+						lgr.RedLog("msgs:")
+						lgr.RedLog(msgs...)
+						lgr.RedLog(err)
+					}
+					return err
+				}
+			}, func(result ...interface{}) interface{} {
+				return result
+			}
+	}
+
+	lgr.InfoLog("----start----")
+	return func(msgs ...interface{}) func(error) error {
+			return func(err error) error {
+				if err == nil {
+					lgr.BlueLog(hs.Unshift(msgs, "Passed")...)
+					return nil
+				}
+				lgr.BugHunter(append(msgs, "\nError: {{\n\n\t", err, "\n\n}} \n")...)
+				return err
+			}
+		}, func(result ...interface{}) interface{} {
+			lgr.SuccessLog("Done! no error :)")
+			lgr.SuccessLog("result: ", result)
+			return result
+		}
 }
-func (lgr *Core) YellowLog(msgs ...interface{}) *Core {
-	return lgr.colorLog(colors.ColorYellow, msgs...)
+
+func (lgr *Core) RedLog(msgs ...interface{}) *Core {
+	return lgr.colorLog(stuff.ColorRed, msgs...)
+}
+func (lgr *Core) InfoLog(msgs ...interface{}) *Core {
+	return lgr.colorLog(stuff.ColorYellow, msgs...)
 }
 func (lgr *Core) GreenLog(msgs ...interface{}) *Core {
-	return lgr.colorLog(colors.ColorGreen, msgs...)
+	return lgr.colorLog(stuff.ColorGreen, msgs...)
 }
 func (lgr *Core) BlueLog(msgs ...interface{}) *Core {
-	return lgr.colorLog(colors.ColorBlue, msgs...)
+	return lgr.colorLog(stuff.ColorBlue, msgs...)
 }
 func (lgr *Core) PurpleLog(msgs ...interface{}) *Core {
-	return lgr.colorLog(colors.ColorPurple, msgs...)
+	return lgr.colorLog(stuff.ColorPurple, msgs...)
 }
 func (lgr *Core) CyanLog(msgs ...interface{}) *Core {
-	return lgr.colorLog(colors.ColorCyan, msgs...)
+	return lgr.colorLog(stuff.ColorCyan, msgs...)
+}
+
+func (lgr *Core) SuccessLog(msgs ...interface{}) *Core {
+	return lgr.GreenLog(hs.Unshift(msgs, stuff.Check)...)
+}
+func (lgr *Core) ErrorLog(msgs ...interface{}) *Core {
+	return lgr.RedLog(hs.Unshift(msgs, stuff.Cross)...)
+}
+func (lgr *Core) BugHunter(msgs ...interface{}) *Core {
+	return lgr.RedLog(hs.Unshift(msgs, stuff.Bug)...)
 }

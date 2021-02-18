@@ -56,10 +56,13 @@ func CreateDir(logPath string) (didCreate bool) {
 	return true
 }
 
-func Unshift(new interface{}, vals []interface{}) []interface{} {
-	result := make([]interface{}, 0, len(vals)+1)
+func Unshift(vals []interface{}, new ...interface{}) []interface{} {
+	result := make([]interface{}, 0, len(vals)+len(new))
 
-	result = append(result, new)
+	for _, n := range new {
+		result = append(result, n)
+	}
+
 	result = append(result, vals...)
 
 	return result
