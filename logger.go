@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	stuff "github.com/mreza0100/golog/fun_stuff"
-	hs "github.com/mreza0100/golog/helpers"
+	hp "github.com/mreza0100/golog/helpers"
 	wr "github.com/mreza0100/golog/writer"
 )
 
@@ -45,7 +45,7 @@ func (lgr *Core) Fatal(msgs ...interface{}) {
 func (lgr *Core) With(add ...interface{}) *Core {
 	newLogger := lgr.Copy()
 
-	newLogger.Data.AddLog = hs.Combine(lgr.Data.AddLog, add)
+	newLogger.Data.AddLog = hp.Combine(lgr.Data.AddLog, add)
 
 	return newLogger
 }
@@ -80,7 +80,7 @@ func (lgr *Core) Log(msgs ...interface{}) *Core {
 }
 
 func (lgr *Core) getFullMsgs(msgs ...interface{}) []interface{} {
-	msgs = hs.Combine(lgr.Data.AddLog, lgr.getHooksVals(), msgs)
+	msgs = hp.Combine(lgr.Data.AddLog, lgr.getHooksVals(), msgs)
 	msgs = append(msgs, "\n")
 
 	return msgs
@@ -137,7 +137,7 @@ func (lgr *Core) DebugPKG(where string, active bool) (func(msgs ...interface{}) 
 	return func(msgs ...interface{}) func(error) error {
 			return func(err error) error {
 				if err == nil {
-					lgr.BlueLog(hs.Unshift(msgs, "Passed")...)
+					lgr.BlueLog(hp.Unshift(msgs, "Passed")...)
 					return nil
 				}
 				lgr.BugHunter(append(msgs, "\nError: {{\n\n\t", err, "\n\n}} \n")...)
@@ -170,11 +170,14 @@ func (lgr *Core) CyanLog(msgs ...interface{}) *Core {
 }
 
 func (lgr *Core) SuccessLog(msgs ...interface{}) *Core {
-	return lgr.GreenLog(hs.Unshift(msgs, stuff.Check)...)
+	return lgr.GreenLog(hp.Unshift(msgs, stuff.Check)...)
 }
 func (lgr *Core) ErrorLog(msgs ...interface{}) *Core {
-	return lgr.RedLog(hs.Unshift(msgs, stuff.Cross)...)
+	return lgr.RedLog(hp.Unshift(msgs, stuff.Cross)...)
 }
 func (lgr *Core) BugHunter(msgs ...interface{}) *Core {
-	return lgr.RedLog(hs.Unshift(msgs, stuff.Bug)...)
+	return lgr.RedLog(hp.Unshift(msgs, stuff.Bug)...)
+}
+func (lgr *Core) Here(msgs ...interface{}) *Core {
+	return lgr.InfoLog(hp.Unshift(msgs, "here!")...)
 }

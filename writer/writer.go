@@ -35,9 +35,16 @@ func (w *Writer) writeHandler(data []byte) error {
 }
 
 func (w *Writer) Write(msgs ...interface{}) error {
+	if w.logPath == "" {
+		return nil
+	}
 	return w.writeHandler(helpers.ToByte(msgs...))
 }
 
 func (w *Writer) RemoveFile() error {
+	if w.logPath == "" {
+		return nil
+	}
+
 	return os.Remove(w.logPath)
 }
